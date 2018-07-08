@@ -24,6 +24,7 @@ var api = new ParseServer({
 });
 
 var dashboard = new ParseDashboard({
+  "allowInsecureHTTP": true,
   "apps": [
     {
       "serverURL": "https://actiplay.herokuapp.com",
@@ -32,7 +33,7 @@ var dashboard = new ParseDashboard({
       "appName": "Actiplay"
     }
   ]
-});
+}, true);
 
 
 // Client-keys like the javascript key or the .NET key are not necessary with parse-server
