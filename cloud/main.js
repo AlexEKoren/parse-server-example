@@ -1,6 +1,6 @@
 
 Parse.Cloud.beforeSave("Follow", function(request, response) {
-	if (request.user.id != request.object.get('follower')) {
+	if (request.user && request.user.id != request.object.get('follower')) {
 		return response.error('You can\'t create a follow for another user!');
 	}
 	var Follow = Parse.Object.extend("Follow");
@@ -17,7 +17,7 @@ Parse.Cloud.beforeSave("Follow", function(request, response) {
 			}
 		},
 		error: function(error) {
-			response.error(error);
+			response.error('Query error: ' + error);
 		}
 	})
 });
