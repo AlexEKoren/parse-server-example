@@ -32,7 +32,13 @@ var dashboard = new ParseDashboard({
       "masterKey": "actiplaysecret",
       "appName": "Actiplay"
     }
-  ]
+  ],
+  "users": [
+   {
+    "user":process.env.USER1,
+    "pass":process.env.USER1_PASSWORD
+   }
+  ],
 }, {allowInsecureHTTP: true});
 
 
