@@ -27,9 +27,9 @@ var dashboard = new ParseDashboard({
   "allowInsecureHTTP": true,
   "apps": [
     {
-      "serverURL": process.env.SERVER_URL || 'https://localhost:1337/parse',
-      "appId": "co.actiview.Actiplay",
-      "masterKey": "actiplaysecret",
+      "serverURL": process.env.PARSE_MOUNT,
+      "appId": process.env.APP_ID,
+      "masterKey": process.env.MASTER_KEY,
       "appName": "Actiplay"
     }
   ],
