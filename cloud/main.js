@@ -1,4 +1,4 @@
-
+Parse.serverURL = process.env.SERVER_URL;
 Parse.Cloud.beforeSave("Follow", function(request, response) {
 	if (!request.user && !request.master)
 		return response.error('You must be logged in to create follows');
