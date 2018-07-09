@@ -27,7 +27,7 @@ var dashboard = new ParseDashboard({
   "allowInsecureHTTP": true,
   "apps": [
     {
-      "serverURL": 'https://localhost:1337/parse',
+      "serverURL": 'https://actiplay.herokuapp.com/parse',
       "appId": process.env.APP_ID,
       "masterKey": process.env.MASTER_KEY,
       "appName": "Actiplay"
