@@ -13,7 +13,7 @@ Parse.Cloud.beforeSave("Follow", function(request, response) {
 			}
 		},
 		error: function(error) {
-			response.error('Failed to run the query');
+			response.error(error);
 		}
 	})
 });
