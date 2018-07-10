@@ -31,9 +31,6 @@ Parse.Cloud.define("unfollow", function(request, response) {
 	console.log('UNFOLLOW: ' + request.params.follower_id);
 	if (!request.user)
 		return response.error('You must be logged in to unfollow');
-	if (request.user && request.user.id != request.params.follower_id) {
-		return response.error('You can\'t unfollow for another user!');
-	}
 	var following = Parse.User.createWithoutData(follower_id);
 	var Follow = Parse.Object.extend("Follow");
 	var query = new Parse.Query(Follow);
