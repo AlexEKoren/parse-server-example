@@ -28,7 +28,7 @@ Parse.Cloud.beforeSave("Follow", function(request, response) {
 });
 
 Parse.Cloud.define("unfollow", function(request, response) {
-	console.log('UNFOLLOW: ' + request.params.follower.id);
+	console.log('UNFOLLOW: ' + request.params.follower_id);
 	if (!request.user)
 		return response.error('You must be logged in to unfollow');
 	if (request.user && request.user.id != request.params.follower_id) {
