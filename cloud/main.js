@@ -36,7 +36,7 @@ Parse.Cloud.define("unfollow", function(request, response) {
 	var Follow = Parse.Object.extend("Follow");
 	var query = new Parse.Query(Follow);
 	query.equalTo('following', request.object.get('following'));
-	query.equalTo('follower', request.object.get('follower'));
+	query.equalTo('follower', request.user);
 	query.find({useMasterKey:true}).then(follows => {
 		if (follows.length <= 0)
 			return response.success();
