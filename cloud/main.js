@@ -47,3 +47,22 @@ Parse.Cloud.define("unfollow", function(request, response) {
 		return response.error(error);
 	});
 });
+
+Parse.Cloud.define("did_sync", function(request, response) {
+	if (!request.user)
+		return response.error('You must be logged in to record a sync');
+	var Badge = Parse.Object.extend("Badge");
+	var query = new Parse.Query(Badge);
+	query.equalTo('user', request.user);
+	query.count({
+		success: function(count) {
+			if (count <= 0)
+				response.success();
+			else
+				response.error('Badge already exists');
+		},
+		error: function(error) {
+			response.error('Query error: ' + error);
+		}
+	})
+});
