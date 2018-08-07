@@ -57,7 +57,7 @@ Parse.Cloud.define("did_sync", function(request, response) {
 	query.count({
 		success: function(count) {
 			if (count <= 0)
-				response.success();
+				createBadge(request, response, 'First Timer', 'Successfully synchronize with a movie.', 0);
 			else
 				response.error('Badge already exists');
 		},
@@ -66,3 +66,21 @@ Parse.Cloud.define("did_sync", function(request, response) {
 		}
 	})
 });
+
+function createBadge(request, response, name, description, level) {
+	var Badge = Parse.Object.extend("Badge");
+	var badge = new Badge();
+	badge.set("user", request.user);
+	badge.set("name", name);
+	badge.set("description", description);
+	badge.set("level", level);
+	badge.save(null, {
+		success: function(badge) {
+			console.log(badge);
+			response.success(badge);
+		},
+		error: function(badge, error) {
+			response.error('Save error: ' + error);
+		}
+	});
+}
