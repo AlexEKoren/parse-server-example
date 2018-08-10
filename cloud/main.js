@@ -1,3 +1,19 @@
+Parse.Cloud.define('get_events', function(request, response) {
+	var Event = Parse.Object.extend('Event');
+	var query = new Parse.Query(Event);
+	var Title = Parse.Object.extend('Title');
+	var title = Title.createWithoutData(request.params.title_id);
+	query.equalTo('title', title);
+	query.include('title');
+	query.include('user');
+	recursiveQuery(query, 0, []).then(function(events) {
+		response.success(events);
+	},
+	function(error) {
+		response.error(error);
+	});
+});
+
 Parse.Cloud.beforeSave("Follow", function(request, response) {
 	if (!request.user && !request.master)
 		return response.error('You must be logged in to create follows');
@@ -48,16 +64,32 @@ Parse.Cloud.define("unfollow", function(request, response) {
 	});
 });
 
+var FIRST_TIMER = 'First Timer';
+var SPREADING_THE_WORD = 'Spreading the Word';
+
 Parse.Cloud.define("did_sync", function(request, response) {
+	checkForBadge(request, response, FIRST_TIMER, function() {
+		createBadge(request, response, FIRST_TIMER, 'Successfully synchronize with a movie.', 0);
+	});
+});
+
+Parse.Cloud.define("did_share", function(request, response) {
+	checkForBadge(request, response, SPREADING_THE_WORD, function() {
+		createBadge(request, response, SPREADING_THE_WORD, 'Shared the app with new people!', 0);
+	});
+});
+
+function checkForBadge(request, response, name, callback) {
 	if (!request.user)
 		return response.error('You must be logged in to record a sync');
 	var Badge = Parse.Object.extend("Badge");
 	var query = new Parse.Query(Badge);
 	query.equalTo('user', request.user);
+	query.equalTo('name', name);
 	query.count({
 		success: function(count) {
 			if (count <= 0)
-				createBadge(request, response, 'First Timer', 'Successfully synchronize with a movie.', 0);
+				callback();
 			else
 				response.error('Badge already exists');
 		},
@@ -65,7 +97,7 @@ Parse.Cloud.define("did_sync", function(request, response) {
 			response.error('Query error: ' + error);
 		}
 	})
-});
+}
 
 function createBadge(request, response, name, description, level) {
 	var Badge = Parse.Object.extend("Badge");
@@ -83,4 +115,32 @@ function createBadge(request, response, name, description, level) {
 			response.error('Save error: ' + error);
 		}
 	});
+}
+
+function simpleQuery(query, batchNumber) {
+  query.limit(1000);
+  query.skip(batchNumber * 1000);
+
+  return query.find().then(
+    function(objects) {
+      return objects;
+    },
+    function(error) {
+      return error;
+    }
+  );
+}
+
+function recursiveQuery(query, batchNumber, allObjects) {
+  return simpleQuery(query, batchNumber).then(function(objects) {
+    // concat the intermediate objects into the final array
+    allObjects = allObjects.concat(objects);
+    // if the objects length is 1000, it means that we are not at the end of the list
+    if (objects.length === 1000) {
+      batchNumber = batchNumber + 1;
+      return recursiveQuery(query, batchNumber, allObjects);
+    } else {
+      return allObjects;
+    }
+  });
 }
