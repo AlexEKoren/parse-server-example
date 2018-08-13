@@ -1,18 +1,35 @@
+var Follow = Parse.Object.extend('Follow');
+var Event = Parse.Object.extend('Event');
+var Title = Parse.Object.extend('Title');
+var Badge = Parse.Object.extend("Badge");
+
+
 Parse.Cloud.define('get_events', function(request, response) {
-	var Event = Parse.Object.extend('Event');
 	var query = new Parse.Query(Event);
-	var Title = Parse.Object.extend('Title');
 	var title = Title.createWithoutData(request.params.title_id);
 	query.equalTo('title', title);
 	query.include('title');
 	query.include('user');
-	recursiveQuery(query, 0, []).then(function(events) {
-		response.success(events);
-	},
-	function(error) {
-		response.error(error);
+	updateQueryWithFollowers(request, query, function(following_query) {
+		recursiveQuery(following_query, 0, []).then(function(events) {
+			response.success(events);
+		},
+		function(error) {
+			response.error(error);
+		});
 	});
+	
 });
+
+function updateQueryWithFollowers(request, query, callback) {
+	if (request.params.gloabl == false)
+		return callback(query);
+
+	var follow_query = new Parse.Query(Follow);
+	follow_query.equalTo('follower', request.user);
+	query.matchesKeyInQuery('user', 'following', follow_query);
+	callback(query);
+}
 
 Parse.Cloud.beforeSave("Follow", function(request, response) {
 	if (!request.user && !request.master)
@@ -24,7 +41,6 @@ Parse.Cloud.beforeSave("Follow", function(request, response) {
 		return response.error('You can\'t follow yourself!');
 	}
 	
-	var Follow = Parse.Object.extend("Follow");
 	var query = new Parse.Query(Follow);
 	query.equalTo('following', request.object.get('following'));
 	query.equalTo('follower', request.object.get('follower'));
@@ -48,7 +64,6 @@ Parse.Cloud.define("unfollow", function(request, response) {
 	if (!request.user)
 		return response.error('You must be logged in to unfollow');
 	var following = Parse.User.createWithoutData(request.params.following_id);
-	var Follow = Parse.Object.extend("Follow");
 	var query = new Parse.Query(Follow);
 	query.equalTo('following', following);
 	query.equalTo('follower', request.user);
@@ -82,7 +97,6 @@ Parse.Cloud.define("did_share", function(request, response) {
 function checkForBadge(request, response, name, callback) {
 	if (!request.user)
 		return response.error('You must be logged in to record a sync');
-	var Badge = Parse.Object.extend("Badge");
 	var query = new Parse.Query(Badge);
 	query.equalTo('user', request.user);
 	query.equalTo('name', name);
@@ -100,7 +114,6 @@ function checkForBadge(request, response, name, callback) {
 }
 
 function createBadge(request, response, name, description, level) {
-	var Badge = Parse.Object.extend("Badge");
 	var badge = new Badge();
 	badge.set("user", request.user);
 	badge.set("name", name);
