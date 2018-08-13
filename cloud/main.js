@@ -22,7 +22,8 @@ Parse.Cloud.define('get_events', function(request, response) {
 });
 
 function updateQueryWithFollowers(request, query, callback) {
-	if (request.params.gloabl == false)
+	console.log(request.params.global);
+	if (request.params.global == true) 
 		return callback(query);
 
 	var follow_query = new Parse.Query(Follow);
