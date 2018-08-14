@@ -33,6 +33,7 @@ function updateQueryWithFollowers(request, query, callback) {
 
 	var follow_query = new Parse.Query(Follow);
 	follow_query.equalTo('follower', request.user);
+	follow_query.include('following');
 	query.matchesKeyInQuery('user', 'following', follow_query);
 	var user_query = new Parse.Query(Event);
 	user_query.equalTo('user', request.user);
