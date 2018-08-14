@@ -31,7 +31,7 @@ function updateQueryWithFollowers(request, query, callback) {
 	query.matchesKeyInQuery('user', 'following', follow_query);
 	var user_query = new Parse.Query(Event);
 	user_query.equalTo('user', request.user);
-	callback(Parse.Query.or(user_query, follow_query));
+	callback(Parse.Query.or(user_query, query));
 }
 
 Parse.Cloud.beforeSave("Follow", function(request, response) {
