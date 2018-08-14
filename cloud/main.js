@@ -36,7 +36,7 @@ function updateQueryWithFollowers(request, query, callback) {
 	query.matchesKeyInQuery('user', 'following', follow_query);
 	var user_query = new Parse.Query(Event);
 	user_query.equalTo('user', request.user);
-	user_query.equalTo(Title.createWithoutData(request.params.title_id));
+	user_query.equalTo('title', Title.createWithoutData(request.params.title_id));
 
 	var total_query = Parse.Query.or(user_query, query);
 	total_query.include('title');
