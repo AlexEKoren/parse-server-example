@@ -3,6 +3,11 @@ var Event = Parse.Object.extend('Event');
 var Title = Parse.Object.extend('Title');
 var Badge = Parse.Object.extend("Badge");
 
+var god_ids = ['vmBSxOeEbP', 'P5CBED1VUc'];
+var god_accounts = god_ids.map(god_id => {
+	return Parse.User.createWithoutData(god_id);
+});
+
 
 Parse.Cloud.define('get_events', function(request, response) {
 	var query = new Parse.Query(Event);
@@ -31,6 +36,8 @@ function updateQueryWithFollowers(request, query, callback) {
 	query.matchesKeyInQuery('user', 'following', follow_query);
 	var user_query = new Parse.Query(Event);
 	user_query.equalTo('user', request.user);
+	user_query.include('title');
+	user_query.include('user');
 	callback(Parse.Query.or(user_query, query));
 }
 
