@@ -135,6 +135,7 @@ Parse.Cloud.define('post_event', function(request, response) {
 	}, function(error) {
 		response.error('Save error: ' + error);
 	}).then(function(count) {
+		logger.info('COUNTED ' + count + ' objects!');
 		var level = 0;
 		while (level < badges[request.params.type]['levels'].length && badges[request.params.type]['levels'][level]['count'] <= count) {
 			level++;
