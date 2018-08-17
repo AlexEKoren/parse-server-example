@@ -127,7 +127,7 @@ Parse.Cloud.define('post_event', function(request, response) {
 	event.set('payload', request.params.payload);
 	event.set('offset', request.params.offset);
 	event.set('type', request.params.type);
-	event.save(null).then(function(event) {
+	event.save().then(function(event) {
 		var query = new Parse.Query(Event);
 		query.equalTo('user', request.user);
 		query.equalTo('type', request.params.type);
@@ -168,7 +168,7 @@ function updateBadgeLevel(request, name, description, level) {
 		} else {
 			logger.info('Updating Badge');
 			badges[0].set('level', level);
-			return badges[0].save(null);
+			return badges[0].save();
 		}
 	}, function(error) {
 		return Parse.Promise.error('No badge to update');
@@ -260,7 +260,7 @@ function createBadge(request, name, description, level) {
 	badge.set("name", name);
 	badge.set("description", description);
 	badge.set("level", level);
-	return badge.save(null);
+	return badge.save();
 }
 
 function simpleQuery(query, batchNumber) {
