@@ -153,6 +153,8 @@ function updateBadgeLevel(request, name, description, level) {
 	query.equalTo('user', request.user);
 	query.equalTo('name', name);
 	query.find({useMasterKey:true}).then(function(badges) {
+		console.log('NUMBER OF BADGES');
+		console.log(badges.length);
 		if (badges.length == 0) {
 			return createBadge(request, name, description, level);
 		} else if (badges[0].get('level') >= level) {
