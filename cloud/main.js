@@ -170,6 +170,7 @@ function updateBadgeLevel(request, name, description, level) {
 		} else {
 			logger.info('Updating Badge');
 			badges[0].set('level', level);
+			badges[0].set('description', badges[request.params.type]['levels'][level - 1]['description']);
 			return badges[0].save();
 		}
 	}, function(error) {
