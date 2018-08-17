@@ -144,6 +144,8 @@ Parse.Cloud.define('post_event', function(request, response) {
 		logger.info('LEVEL ' + level);
 		return updateBadgeLevel(request, badges[request.params.type]['name'], badges[request.params.type]['levels'][level - 1]['description'], level);
 	}).then(function(badge) {
+		logger.info('CREATED BADGE');
+		logger.info(badge);
 		response.success({"event":event, "badge":badge});
 	}, function(error) {
 		logger.info(error);
