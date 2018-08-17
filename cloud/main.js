@@ -126,7 +126,7 @@ Parse.Cloud.define('post_event', function(request, response) {
 	event.set('payload', request.params.payload);
 	event.set('offset', request.params.offset);
 	event.set('type', request.params.type);
-	badge.save(null).then(function(event) {
+	event.save(null).then(function(event) {
 		var query = new Parse.Query(Event);
 		query.equalTo('user', request.user);
 		query.equalTo('type', type);
