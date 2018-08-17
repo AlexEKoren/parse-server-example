@@ -155,8 +155,11 @@ function updateBadgeLevel(request, name, description, level) {
 	query.find({useMasterKey:true}).then(function(badges) {
 		if (badges.length == 0) {
 			return createBadge(request, name, description, level);
-		} else if (badges[0].get('level') < level) {
+		} else if (badges[0].get('level') >= level) {
 			return Parse.Promise.error('no badge to update');
+		} else {
+			badges[0].set('level', level);
+			return badges[0].save(null);
 		}
 	}, function(error) {
 		return Parse.Promise.error('No badge to update');
