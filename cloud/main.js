@@ -139,8 +139,10 @@ Parse.Cloud.define('post_event', function(request, response) {
 		while (level < badges[request.params.type]['levels'].length && badges[request.params.type]['levels'][level]['count'] <= count) {
 			level++;
 		}
+		if (level == 0)
+			return Parse.Promise.error('No badge to update');
 		logger.info('LEVEL ' + level);
-		return updateBadgeLevel(request, badges[request.params.type]['name'], badges[request.params.type]['levels'][level]['description'], level);
+		return updateBadgeLevel(request, badges[request.params.type]['name'], badges[request.params.type]['levels'][level - 1]['description'], level);
 	}).then(function(badge) {
 		response.success({"event":event, "badge":badge});
 	}, function(error) {
@@ -155,13 +157,14 @@ function updateBadgeLevel(request, name, description, level) {
 	query.equalTo('user', request.user);
 	query.equalTo('name', name);
 	query.find({useMasterKey:true}).then(function(badges) {
-		logger.info('NUMBER OF BADGES');
-		logger.info(badges.length);
 		if (badges.length == 0) {
+			logger.info('NO BADGES');
 			return createBadge(request, name, description, level);
 		} else if (badges[0].get('level') >= level) {
+			logger.info('Level < Current Badge');
 			return Parse.Promise.error('no badge to update');
 		} else {
+			logger.info('Updating Badge');
 			badges[0].set('level', level);
 			return badges[0].save(null);
 		}
