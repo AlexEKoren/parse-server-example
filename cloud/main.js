@@ -143,7 +143,7 @@ Parse.Cloud.define('post_event', function(request, response) {
 	}).then(function(badge) {
 		response.success({"event":event, "badge":badge});
 	}, function(error) {
-		console.error(error);
+		console.log(error);
 		response.success({"event":event});
 	});
 });
