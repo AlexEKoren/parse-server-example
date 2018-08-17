@@ -147,7 +147,7 @@ Parse.Cloud.define('post_event', function(request, response) {
 	}).then(function(badge) {
 		logger.info('CREATED BADGE');
 		logger.info(badge);
-		response.success({"event":event, "badge":badge});
+		response.success({"event":event, "badge":badge, "no-badge":false});
 	}, function(error) {
 		logger.info(error);
 		logger.info('THERE WAS A BADGE ERROR');
