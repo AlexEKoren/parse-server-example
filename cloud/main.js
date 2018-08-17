@@ -135,9 +135,10 @@ Parse.Cloud.define('post_event', function(request, response) {
 		response.error('Save error: ' + error);
 	}).then(function(count) {
 		var level = 0;
-		while (level < badges[request.params.type]['levels'].length && badges[request.params.type]['levels'][level]['count'] < count) {
+		while (level < badges[request.params.type]['levels'].length && badges[request.params.type]['levels'][level]['count'] <= count) {
 			level++;
 		}
+		console.log('LEVEL ' + level);
 		return updateBadgeLevel(request, badges[request.params.type]['name'], badges[request.params.type]['levels'][level]['description'], level);
 	}).then(function(badge) {
 		response.success({"event":event, "badge":badge});
