@@ -160,16 +160,10 @@ function updateBadgeLevel(request, name, description, level) {
 	var query = new Parse.Query(Badge);
 	query.equalTo('user', request.user);
 	query.equalTo('name', name);
-	query.find({useMasterKey:true}).then(function(badges) {
+	return query.find({useMasterKey:true}).then(function(badges) {
 		if (badges.length == 0) {
 			logger.info('NO BADGES');
-			var badge = new Badge();
-			badge.set("user", request.user);
-			badge.set("name", name);
-			badge.set("description", description);
-			badge.set("level", level);
-			return badge.save();
-			//return createBadge(request, name, description, level);
+			return createBadge(request, name, description, level);
 		} else if (badges[0].get('level') >= level) {
 			logger.info('Level < Current Badge');
 			return Parse.Promise.error('no badge to update');
