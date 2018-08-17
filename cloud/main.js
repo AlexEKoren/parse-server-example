@@ -8,6 +8,78 @@ var god_accounts = god_ids.map(god_id => {
 	return Parse.User.createWithoutData(god_id);
 });
 
+var badges = {
+	'text': {
+		'name': 'Screenplay Writer',
+		'levels': [
+			{
+				'count': 1,
+				'description': 'Wrote your first post'
+			}, 
+			{
+				'count': 50,
+				'description': 'Wrote 50 posts'
+			}, 
+			{
+				'count': 250,
+				'description': 'Wrote 250 posts'
+			}, 
+			{
+				'count': 1000,
+				'description': 'Wrote 1000 posts'
+			}
+		]
+	}, 'image': {
+		'name': 'Photographer',
+		'levels': [
+			{
+				'count': 1,
+				'description': 'Posted your first photo'
+			}, 
+			{
+				'count': 20,
+				'description': 'Posted 20 photos'
+			}, 
+			{
+				'count': 100,
+				'description': 'Posted 100 photos'
+			}, 
+			{
+				'count': 500,
+				'description': 'Posted 500 photos'
+			}
+		]
+	}, 'video': {
+		'name': 'Cinematographer',
+		'levels': [
+			{
+				'count': 1,
+				'description': 'Posted your first video'
+			}, 
+			{
+				'count': 20,
+				'description': 'Posted 20 videos'
+			}, 
+			{
+				'count': 100,
+				'description': 'Posted 100 videos'
+			}, 
+			{
+				'count': 500,
+				'description': 'Posted 500 videos'
+			}
+		]
+	}, 'emoji': {
+		'name': 'Emoji Master',
+		'levels': [
+			{
+				'count': 1000,
+				'description': 'Reacted with 1000 emojis'
+			}
+		]
+	}
+};
+
 
 Parse.Cloud.define('get_events', function(request, response) {
 	var query = new Parse.Query(Event);
@@ -42,6 +114,51 @@ function updateQueryWithFollowers(request, query, callback) {
 	total_query.include('title');
 	total_query.include('user');
 	callback(total_query);
+}
+
+Parse.Cloud.define('post_event', function(request, response) {
+	if (!request.user) 
+		return response.error('You must be logged in to post an event');
+	var title = Title.createWithoutData(request.params.title_id);
+	var event = new Event();
+	event.set('user', request.user);
+	event.set('title', title);
+	event.set('payload', request.params.payload);
+	event.set('offset', request.params.offset);
+	event.set('type', request.params.type);
+	badge.save(null).then(function(event) {
+		var query = new Parse.Query(Event);
+		query.equalTo('user', request.user);
+		query.equalTo('type', type);
+		return query.count();
+	}, function(error) {
+		response.error('Save error: ' + error);
+	}).then(function(count) {
+		var level = 0;
+		while (level < badges[request.params.type]['levels'].length && badges[request.params.type]['levels'][level]['count'] < count) {
+			level++;
+		}
+		return updateBadgeLevel(request, badges[request.params.type]['name'], badges[request.params.type]['levels'][level]['description'], level);
+	}).then(function(badge) {
+		response.success({"event":event, "badge":badge});
+	}, function(error) {
+		response.success({"event":event});
+	});
+});
+
+function updateBadgeLevel(request, name, description, level) {
+	var query = new Parse.Query(Badge);
+	query.equalTo('user', request.user);
+	query.equalTo('name', name);
+	query.find({useMasterKey:true}).then(function(badges) {
+		if (badges.length == 0) {
+			return createBadge(request, name, description, level);
+		} else if (badges[0].get('level') < level) {
+			return Parse.Promise.error('no badge to update');
+		}
+	}, function(error) {
+		return Parse.Promise.error('No badge to update');
+	});
 }
 
 Parse.Cloud.beforeSave("Follow", function(request, response) {
@@ -102,45 +219,34 @@ Parse.Cloud.define("did_sync", function(request, response) {
 });
 
 Parse.Cloud.define("did_share", function(request, response) {
-	checkForBadge(request, response, SPREADING_THE_WORD, function() {
-		createBadge(request, response, SPREADING_THE_WORD, 'Shared the app with new people!', 0);
+	checkForBadge(request, response, SPREADING_THE_WORD).then(function(count) {
+		if (count <= 0)
+			return createBadge(request, SPREADING_THE_WORD, 'Shared the app with new people!', 0);
+		else
+			response.error('Badge already exists');
+	}).then(function(badge) {
+		response.success(badge);
+	}).error(function(error) {
+		response.error(error);
 	});
 });
 
-function checkForBadge(request, response, name, callback) {
+function checkForBadge(request, response, name) {
 	if (!request.user)
 		return response.error('You must be logged in to record a sync');
 	var query = new Parse.Query(Badge);
 	query.equalTo('user', request.user);
 	query.equalTo('name', name);
-	query.count({
-		success: function(count) {
-			if (count <= 0)
-				callback();
-			else
-				response.error('Badge already exists');
-		},
-		error: function(error) {
-			response.error('Query error: ' + error);
-		}
-	})
+	return query.count();
 }
 
-function createBadge(request, response, name, description, level) {
+function createBadge(request, name, description, level) {
 	var badge = new Badge();
 	badge.set("user", request.user);
 	badge.set("name", name);
 	badge.set("description", description);
 	badge.set("level", level);
-	badge.save(null, {
-		success: function(badge) {
-			console.log(badge);
-			response.success(badge);
-		},
-		error: function(badge, error) {
-			response.error('Save error: ' + error);
-		}
-	});
+	return badge.save(null);
 }
 
 function simpleQuery(query, batchNumber) {
