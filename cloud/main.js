@@ -130,7 +130,7 @@ Parse.Cloud.define('post_event', function(request, response) {
 	event.save(null).then(function(event) {
 		var query = new Parse.Query(Event);
 		query.equalTo('user', request.user);
-		query.equalTo('type', type);
+		query.equalTo('type', request.params.type);
 		return query.count();
 	}, function(error) {
 		response.error('Save error: ' + error);
