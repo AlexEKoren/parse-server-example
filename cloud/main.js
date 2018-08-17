@@ -1,3 +1,5 @@
+const logger = require('parse-server').logger;
+
 var Follow = Parse.Object.extend('Follow');
 var Event = Parse.Object.extend('Event');
 var Title = Parse.Object.extend('Title');
@@ -99,7 +101,6 @@ Parse.Cloud.define('get_events', function(request, response) {
 });
 
 function updateQueryWithFollowers(request, query, callback) {
-	console.log(request.params.global);
 	if (request.params.global == true) 
 		return callback(query);
 
@@ -138,12 +139,12 @@ Parse.Cloud.define('post_event', function(request, response) {
 		while (level < badges[request.params.type]['levels'].length && badges[request.params.type]['levels'][level]['count'] <= count) {
 			level++;
 		}
-		console.log('LEVEL ' + level);
+		logger.info('LEVEL ' + level);
 		return updateBadgeLevel(request, badges[request.params.type]['name'], badges[request.params.type]['levels'][level]['description'], level);
 	}).then(function(badge) {
 		response.success({"event":event, "badge":badge});
 	}, function(error) {
-		console.log(error);
+		logger.info(error);
 		response.success({"event":event});
 	});
 });
@@ -153,8 +154,8 @@ function updateBadgeLevel(request, name, description, level) {
 	query.equalTo('user', request.user);
 	query.equalTo('name', name);
 	query.find({useMasterKey:true}).then(function(badges) {
-		console.log('NUMBER OF BADGES');
-		console.log(badges.length);
+		logger.info('NUMBER OF BADGES');
+		logger.info(badges.length);
 		if (badges.length == 0) {
 			return createBadge(request, name, description, level);
 		} else if (badges[0].get('level') >= level) {
@@ -197,7 +198,7 @@ Parse.Cloud.beforeSave("Follow", function(request, response) {
 });
 
 Parse.Cloud.define("unfollow", function(request, response) {
-	console.log('UNFOLLOW: ' + request.params.following_id);
+	logger.info('UNFOLLOW: ' + request.params.following_id);
 	if (!request.user)
 		return response.error('You must be logged in to unfollow');
 	var following = Parse.User.createWithoutData(request.params.following_id);
